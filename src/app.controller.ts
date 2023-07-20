@@ -27,4 +27,17 @@ export class AppController {
     console.log(req.body);
     return 'OK';
   }
+
+  @Post('received')
+  async messageReceived(@Req() req: any) {
+    console.log('FROM RECEIVED');
+    console.log(req.body);
+    console.log(
+      await this.twilioService.sendSms({
+        body: 'Received you message',
+        to: '+9779847536829',
+      }),
+    );
+    return 'OK';
+  }
 }
