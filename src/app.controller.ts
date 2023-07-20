@@ -11,6 +11,7 @@ export class AppController {
 
   @Get()
   async getHello(): Promise<string> {
+    console.log('FROM GET HELLO');
     console.log(
       await this.twilioService.sendSms({
         body: 'Hello from Twilio',
@@ -22,6 +23,7 @@ export class AppController {
 
   @Post()
   async messageStatus(@Req() req: any) {
+    console.log('FROM STATU');
     console.log(req.body);
     return 'OK';
   }
