@@ -12,14 +12,15 @@ import { PrismaClient } from '@prisma/client';
 export class TwilioService {
   client: TwilioClient;
   from: string;
+  prisma: PrismaClient;
 
-  constructor(
-    options: TwilioServiceOptions,
-    private prismaService: PrismaClient,
-  ) {
+  constructor(options: TwilioServiceOptions, prismaService: PrismaClient) {
     const twilioAccountSid = options.accountSid;
     const twilioAuthToken = options.authToken;
     this.from = options.from;
+    this.prisma = prismaService;
+
+    console.log(this.prisma.message.findMany());
 
     if (!twilioAccountSid || !twilioAuthToken) {
       throw new Error('Twilio account SID/auth token not found');
@@ -29,15 +30,17 @@ export class TwilioService {
   }
 
   async sendSms(options: MessageListInstanceCreateOptions) {
+    console.log(await this.prisma.message.findMany());
     const message: MessageInstance = await this.client.messages.create({
       ...options,
       from: `whatsapp:${this.from ? this.from : options.from}`,
       to: `whatsapp:${options.to}`,
     });
     console.log(message);
+    console.log('Here');
 
-    return await this.prismaService.message.create({
-      data: { ...message, status: 'initiated' },
+    return this.prisma.message.create({
+      data: { ...message, sid: message.sid, status: 'initiated' },
     });
   }
 
@@ -50,7 +53,8 @@ export class TwilioService {
     console.log('FROM STATUS');
     console.log(message);
     const { MessageSid, MessageStatus } = message;
-    return await this.prismaService.message.update({
+    console.log(this.prisma.message.findUnique({ where: { sid: MessageSid } }));
+    return await this.prisma.message.update({
       where: { sid: MessageSid },
       data: { status: MessageStatus },
     });

@@ -12,12 +12,11 @@ export class AppController {
   @Get()
   async getHello(): Promise<string> {
     console.log('FROM GET HELLO');
-    console.log(
-      await this.twilioService.sendSms({
-        body: 'Hello from Twilio',
-        to: '+9779847536829',
-      }),
-    );
+    await this.twilioService.sendSms({
+      body: 'Hello from Twilio',
+      to: '+9779847536829',
+    });
+    console.log('Done');
     return this.appService.getHello();
   }
 
