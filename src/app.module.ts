@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TwilioModule } from './utils/twilio-service';
 
 @Module({
@@ -12,6 +11,5 @@ import { TwilioModule } from './utils/twilio-service';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

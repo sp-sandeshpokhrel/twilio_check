@@ -1,5 +1,5 @@
 //import twilio from 'twilio';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   MessageInstance,
   MessageListInstanceCreateOptions,
@@ -12,8 +12,11 @@ import { PrismaService } from './prisma.service';
 export class TwilioService {
   client: TwilioClient;
   from: string;
+  private logger: Logger;
 
   constructor(options: TwilioServiceOptions, private prisma: PrismaService) {
+    this.logger = new Logger('TwilioService');
+    this.logger.log('TwilioService Initialized');
     const twilioAccountSid = options.accountSid;
     const twilioAuthToken = options.authToken;
     this.from = options.from;
@@ -26,16 +29,14 @@ export class TwilioService {
   }
 
   async sendSms(options: MessageListInstanceCreateOptions) {
-    console.log(await this.prisma.message.findMany());
     const message: MessageInstance = await this.client.messages.create({
       ...options,
       from: `whatsapp:${this.from ? this.from : options.from}`,
       to: `whatsapp:${options.to}`,
     });
-    console.log(message);
-    console.log('Here');
+    this.logger.log(`Message sent to ${options.to}`);
 
-    return this.prisma.message.create({
+    return await this.prisma.message.create({
       data: {
         body: options.body,
         to: options.to,
@@ -52,10 +53,10 @@ export class TwilioService {
   }
 
   async statusUpdate(message: any) {
-    console.log('FROM STATUS');
-    console.log(message);
     const { MessageSid, MessageStatus } = message;
-    console.log(this.prisma.message.findUnique({ where: { sid: MessageSid } }));
+    this.logger.log(
+      `Message with SID:${MessageSid} status updated to ${MessageStatus}`,
+    );
     return await this.prisma.message.update({
       where: { sid: MessageSid },
       data: { status: MessageStatus },
