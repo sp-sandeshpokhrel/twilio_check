@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Req } from '@nestjs/common';
 import { AppService } from './app.service';
-import { TwilioService } from './twilio-service';
+import { TwilioService } from './utils/twilio-service';
 
 @Controller()
 export class AppController {
@@ -25,6 +25,7 @@ export class AppController {
   async messageStatus(@Req() req: any) {
     console.log('FROM STATU');
     console.log(req.body);
+    console.log(await this.twilioService.statusUpdate(req.body));
     return 'OK';
   }
 }
