@@ -6,21 +6,17 @@ import {
 } from 'twilio/lib/rest/api/v2010/account/message';
 import TwilioClient from 'twilio/lib/rest/Twilio';
 import { TwilioServiceOptions } from './twilio-service-options';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class TwilioService {
   client: TwilioClient;
   from: string;
-  prisma: PrismaClient;
 
-  constructor(options: TwilioServiceOptions, prismaService: PrismaClient) {
+  constructor(options: TwilioServiceOptions, private prisma: PrismaService) {
     const twilioAccountSid = options.accountSid;
     const twilioAuthToken = options.authToken;
     this.from = options.from;
-    this.prisma = prismaService;
-
-    console.log(this.prisma.message.findMany());
 
     if (!twilioAccountSid || !twilioAuthToken) {
       throw new Error('Twilio account SID/auth token not found');
@@ -40,7 +36,13 @@ export class TwilioService {
     console.log('Here');
 
     return this.prisma.message.create({
-      data: { ...message, sid: message.sid, status: 'initiated' },
+      data: {
+        body: options.body,
+        to: options.to,
+        from: this.from ? this.from : options.from,
+        sid: message.sid,
+        status: 'initiated',
+      },
     });
   }
 
@@ -58,5 +60,9 @@ export class TwilioService {
       where: { sid: MessageSid },
       data: { status: MessageStatus },
     });
+  }
+
+  async getMessageStatus(sid: string) {
+    return await this.prisma.message.findUnique({ where: { sid } });
   }
 }

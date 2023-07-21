@@ -1,6 +1,9 @@
-import { Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Param } from '@nestjs/common';
 import { AppService } from './app.service';
 import { TwilioService } from './utils/twilio-service';
+import { CreateMessageDto } from './utils/twilio-service/dto/create-message.dto';
+import { ApiCreatedResponse } from '@nestjs/swagger';
+import { MessageEntity } from './utils/twilio-service/entities/message.entity';
 
 @Controller()
 export class AppController {
@@ -9,15 +12,13 @@ export class AppController {
     private readonly twilioService: TwilioService,
   ) {}
 
-  @Get()
-  async getHello(): Promise<string> {
+  @Post('send')
+  @ApiCreatedResponse({ type: MessageEntity })
+  async create(@Body() message: CreateMessageDto) {
     console.log('FROM GET HELLO');
-    await this.twilioService.sendSms({
-      body: 'Hello from Twilio',
-      to: '+9779847536829',
-    });
+    const mes = await this.twilioService.sendSms(message);
     console.log('Done');
-    return this.appService.getHello();
+    return mes;
   }
 
   @Post()
@@ -26,5 +27,11 @@ export class AppController {
     console.log(req.body);
     console.log(await this.twilioService.statusUpdate(req.body));
     return 'OK';
+  }
+
+  @Get(':sid')
+  @ApiCreatedResponse({ type: MessageEntity })
+  async getMessageStatus(@Param('sid') sid: string) {
+    return this.twilioService.getMessageStatus(sid);
   }
 }

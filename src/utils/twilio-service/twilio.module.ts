@@ -1,19 +1,17 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { TwilioServiceOptions } from './twilio-service-options';
 import { TwilioService } from './twilio.service';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from './prisma.service';
 
 @Module({})
 export class TwilioModule {
-  static forRoot(
-    options: TwilioServiceOptions,
-    primsaService: PrismaClient,
-  ): DynamicModule {
+  static forRoot(options: TwilioServiceOptions): DynamicModule {
     const providers = [
       {
         provide: TwilioService,
-        useValue: new TwilioService(options, primsaService),
+        useValue: new TwilioService(options, new PrismaService()),
       },
+      PrismaService,
     ];
 
     return {
