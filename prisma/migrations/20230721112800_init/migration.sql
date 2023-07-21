@@ -1,11 +1,13 @@
 -- CreateTable
 CREATE TABLE "Message" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "sid" TEXT NOT NULL,
     "body" TEXT NOT NULL,
     "to" TEXT NOT NULL,
     "from" TEXT NOT NULL,
-    "status" TEXT NOT NULL
+    "status" TEXT NOT NULL,
+
+    CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
