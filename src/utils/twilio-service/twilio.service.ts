@@ -1,17 +1,14 @@
 //import twilio from 'twilio';
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  MessageInstance,
-  MessageListInstanceCreateOptions,
-} from 'twilio/lib/rest/api/v2010/account/message';
+import { MessageInstance } from 'twilio/lib/rest/api/v2010/account/message';
 import TwilioClient from 'twilio/lib/rest/Twilio';
 import { TwilioServiceOptions } from './twilio-service-options';
 import { PrismaService } from './prisma.service';
+import { CreateMessageDto } from './dto/create-message.dto';
 
 @Injectable()
 export class TwilioService {
   client: TwilioClient;
-  from: string;
   private logger: Logger;
 
   constructor(options: TwilioServiceOptions, private prisma: PrismaService) {
@@ -19,7 +16,6 @@ export class TwilioService {
     this.logger.log('TwilioService Initialized');
     const twilioAccountSid = options.accountSid;
     const twilioAuthToken = options.authToken;
-    this.from = options.from;
 
     if (!twilioAccountSid || !twilioAuthToken) {
       throw new Error('Twilio account SID/auth token not found');
@@ -28,10 +24,10 @@ export class TwilioService {
     this.client = require('twilio')(twilioAccountSid, twilioAuthToken);
   }
 
-  async sendSms(options: MessageListInstanceCreateOptions) {
+  async sendSms(options: CreateMessageDto) {
     const message: MessageInstance = await this.client.messages.create({
       ...options,
-      from: `whatsapp:${this.from ? this.from : options.from}`,
+      from: `whatsapp:${options.from}`,
       to: `whatsapp:${options.to}`,
     });
     this.logger.log(`Message sent to ${options.to}`);
@@ -40,14 +36,14 @@ export class TwilioService {
       data: {
         body: options.body,
         to: options.to,
-        from: this.from ? this.from : options.from,
+        from: options.from,
         sid: message.sid,
         status: 'initiated',
       },
     });
   }
 
-  async bulkSendSms(options: MessageListInstanceCreateOptions[]) {
+  async bulkSendSms(options: CreateMessageDto[]) {
     const promises = options.map((option) => this.sendSms(option));
     return Promise.all(promises);
   }

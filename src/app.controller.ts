@@ -12,11 +12,13 @@ export class AppController {
   @ApiCreatedResponse({ type: MessageEntity })
   async create(@Body() message: CreateMessageDto) {
     console.log('FROM GET HELLO');
+    console.log(message);
     const mes = this.twilioService.sendSms(message);
     console.log('Done');
     return mes;
   }
 
+  //callback url from twilio which gives us different status of message(delivered, read, failed, sent)
   @Post()
   @ApiExcludeEndpoint()
   async messageStatus(@Req() req: any) {
