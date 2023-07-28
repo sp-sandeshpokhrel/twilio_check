@@ -1,7 +1,19 @@
-import { Body, Controller, Get, Post, Req, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Param,
+  NotFoundException,
+} from '@nestjs/common';
 import { TwilioService } from './utils/twilio-service';
 import { CreateMessageDto } from './utils/twilio-service/dto/create-message.dto';
-import { ApiCreatedResponse, ApiExcludeEndpoint } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiExcludeEndpoint,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 import { MessageEntity } from './utils/twilio-service/entities/message.entity';
 
 @Controller()
@@ -11,7 +23,7 @@ export class AppController {
   @Post('send')
   @ApiCreatedResponse({ type: MessageEntity })
   async create(@Body() message: CreateMessageDto) {
-    console.log('FROM GET HELLO');
+    console.log('FROM GET SEND');
     console.log(message);
     const mes = this.twilioService.sendSms(message);
     console.log('Done');
@@ -28,9 +40,20 @@ export class AppController {
     return 'OK';
   }
 
+  @Post('queue')
+  @ApiOkResponse()
+  async queue(@Body() messages: CreateMessageDto[]) {
+    await this.twilioService.sendBulkSms(messages);
+    return { message: 'OK' };
+  }
+
   @Get(':sid')
   @ApiCreatedResponse({ type: MessageEntity })
   async getMessageStatus(@Param('sid') sid: string) {
-    return this.twilioService.getMessageStatus(sid);
+    const message = await this.twilioService.getMessageStatus(sid);
+    if (!message) {
+      throw new NotFoundException();
+    }
+    return message;
   }
 }

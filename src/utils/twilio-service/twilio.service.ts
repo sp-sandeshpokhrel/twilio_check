@@ -1,17 +1,23 @@
 //import twilio from 'twilio';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { MessageInstance } from 'twilio/lib/rest/api/v2010/account/message';
 import TwilioClient from 'twilio/lib/rest/Twilio';
 import { TwilioServiceOptions } from './twilio-service-options';
 import { PrismaService } from './prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class TwilioService {
-  client: TwilioClient;
+  private client: TwilioClient;
   private logger: Logger;
 
-  constructor(options: TwilioServiceOptions, private prisma: PrismaService) {
+  constructor(
+    @Inject('CONFIG_OPTIONS') private options: TwilioServiceOptions,
+    private prisma: PrismaService,
+    @InjectQueue('message') private readonly messageQueue: Queue,
+  ) {
     this.logger = new Logger('TwilioService');
     this.logger.log('TwilioService Initialized');
     const twilioAccountSid = options.accountSid;
@@ -24,28 +30,38 @@ export class TwilioService {
     this.client = require('twilio')(twilioAccountSid, twilioAuthToken);
   }
 
-  async sendSms(options: CreateMessageDto) {
+  async sendSms(option: CreateMessageDto) {
     const message: MessageInstance = await this.client.messages.create({
-      ...options,
-      from: `whatsapp:${options.from}`,
-      to: `whatsapp:${options.to}`,
+      ...option,
+      from: `whatsapp:${option.from}`,
+      to: `whatsapp:${option.to}`,
     });
-    this.logger.log(`Message sent to ${options.to}`);
-
+    this.logger.log(`Message sent to ${option.to}`);
     return await this.prisma.message.create({
       data: {
-        body: options.body,
-        to: options.to,
-        from: options.from,
+        body: option.body,
+        to: option.to,
+        from: option.from,
         sid: message.sid,
-        status: 'initiated',
+        status: message.status,
       },
     });
   }
 
-  async bulkSendSms(options: CreateMessageDto[]) {
-    const promises = options.map((option) => this.sendSms(option));
-    return Promise.all(promises);
+  async sendBulkSms(options: CreateMessageDto[]) {
+    this.logger.log('Sending bulk sms');
+    options.map(async (option) => {
+      await this.messageQueue.add(
+        {
+          option: option,
+        },
+        {
+          delay: 1500,
+          attempts: 3,
+        },
+      );
+    });
+    return 'Sending';
   }
 
   async statusUpdate(message: any) {
