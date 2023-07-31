@@ -6,6 +6,7 @@ import { TwilioServiceOptions } from './twilio-service-options';
 import { PrismaService } from './prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { InjectQueue } from '@nestjs/bull';
+
 import { Queue } from 'bull';
 
 @Injectable()
@@ -28,6 +29,16 @@ export class TwilioService {
     }
 
     this.client = require('twilio')(twilioAccountSid, twilioAuthToken);
+  }
+
+  validateRequest(
+    url: string,
+    params: any,
+    signature: string,
+    authToken: string,
+  ) {
+    const client = require('twilio');
+    return client.validateRequest(authToken, signature, url, params);
   }
 
   async sendSms(option: CreateMessageDto) {
