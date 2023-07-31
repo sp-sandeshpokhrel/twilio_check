@@ -30,6 +30,16 @@ export class TwilioService {
     this.client = require('twilio')(twilioAccountSid, twilioAuthToken);
   }
 
+  validateRequest(
+    url: string,
+    params: any,
+    signature: string,
+    authToken: string,
+  ) {
+    const client = require('twilio');
+    return client.validateRequest(authToken, signature, url, params);
+  }
+
   async sendSms(option: CreateMessageDto) {
     const message: MessageInstance = await this.client.messages.create({
       ...option,
