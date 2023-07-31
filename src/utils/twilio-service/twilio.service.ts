@@ -6,6 +6,7 @@ import { TwilioServiceOptions } from './twilio-service-options';
 import { PrismaService } from './prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { InjectQueue } from '@nestjs/bull';
+
 import { Queue } from 'bull';
 
 @Injectable()
