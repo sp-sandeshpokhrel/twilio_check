@@ -7,6 +7,8 @@ import { TwilioModule } from './utils/twilio-service';
     TwilioModule.forRoot({
       accountSid: process.env.TWILIO_SID,
       authToken: process.env.TWILIO_SECRET,
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT),
     }),
   ],
   controllers: [AppController],
