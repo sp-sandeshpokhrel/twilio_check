@@ -4,7 +4,7 @@ import { Job } from 'bull';
 import TwilioClient from 'twilio/lib/rest/Twilio';
 import { MessageInstance } from 'twilio/lib/rest/api/v2010/account/message';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from './prisma/prisma.service';
 
 @Processor('message')
 export class MessageConsumer {

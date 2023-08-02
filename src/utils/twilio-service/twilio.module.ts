@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { TwilioServiceOptions } from './twilio-service-options';
 import { TwilioService } from './twilio.service';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from './prisma/prisma.service';
 import { BullModule } from '@nestjs/bull';
 import { MessageConsumer } from './message.consumer';
 
