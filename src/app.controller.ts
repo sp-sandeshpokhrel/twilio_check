@@ -6,7 +6,6 @@ import {
   Req,
   Param,
   NotFoundException,
-  Header,
   Headers,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -35,7 +34,7 @@ export class AppController {
   }
 
   //callback url from twilio which gives us different status of message(delivered, read, failed, sent)
-  @Post()
+  @Post('status')
   @ApiExcludeEndpoint()
   async messageStatus(
     @Headers('X-Twilio-Signature') signature: string,
