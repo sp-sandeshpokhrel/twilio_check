@@ -1,9 +1,8 @@
-//import twilio from 'twilio';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { MessageInstance } from 'twilio/lib/rest/api/v2010/account/message';
 import TwilioClient from 'twilio/lib/rest/Twilio';
 import { TwilioServiceOptions } from './twilio-service-options';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from './prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { InjectQueue } from '@nestjs/bull';
 
